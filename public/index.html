@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ur">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Food Order - Cinnova Technologies</title>
+    <style>
+        /* 🔒 All your original CSS remains unchanged */
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-access {
+            max-width: 500px;
+            margin: 20px auto 0;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .admin-access input {
+            padding: 8px;
+            width: 80%;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        .admin-access button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .entry-list {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .entry-list h3 {
+            margin-top: 0;
+            color: #343a40;
+        }
+
+        .entry {
+            background-color: #fff;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 🔐 Password for Admin Entry List -->
+    <div class="admin-access">
+        <input type="password" id="adminPassword" placeholder="Enter admin password">
+        <button onclick="checkPassword()">Show Entries</button>
+        <p id="errorMsg" style="color:red; display:none;">Incorrect password!</p>
+    </div>
+
+    <!-- ✅ Hidden Entry List -->
+    <div class="entry-list" id="entryList">
+        <h3>Submitted Orders (Admin View)</h3>
+        <div id="entries"></div>
+    </div>
+
+    <!-- 📝 Food Order Form -->
+    <div class="container">
+        <h1>Cinnova Technologies</h1>
+        <h2 style="text-align:center;">Food Order Form</h2>
+
+        <form id="orderForm">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" name="name" placeholder="e.g. Syed Tayyab Imran" required>
+
+            <label for="amount">Amount Paid (PKR)</label>
+            <input type="number" id="amount" name="amount" placeholder="e.g. 250" required>
+
+            <label for="food">Select Your Dish</label>
+            <select id="food" name="food" required>
+                <option value="">-- Select Food --</option>
+                <option value="Qorma">Qorma</option>
+                <option value="Aloo Anda">Aloo Anda</option>
+                <option value="Daal Maash">Daal Maash</option>
+                <option value="Daal Chana">Daal Chana</option>
+                <option value="Curry">Curry</option>
+                <option value="Mutter Qeema">Mutter Qeema</option>
+                <option value="Kaale Channay">Kaale Channay</option>
+                <option value="Aloo Gobi">Aloo Gobi</option>
+                <option value="Aloo Palak">Aloo Palak</option>
+                <option value="Aloo Methi">Aloo Methi</option>
+                <option value="Kozi Haleem">Kozi Haleem</option>
+                <option value="Biryani">Biryani</option>
+                <option value="Pulao">Pulao</option>
+                <option value="Bottles">Bottles</option>
+            </select>
+
+            <label for="instructions">Special Instructions</label>
+            <textarea id="instructions" name="instructions" rows="4"
+                placeholder="e.g. Less spicy, no onions etc."></textarea>
+
+            <button type="submit">Submit Order</button>
+        </form>
+    </div>
+
+    <!-- 🔁 API-Powered Script -->
+    <script>
+        const correctPassword = "cinnova123";
+
+        function checkPassword() {
+            const enteredPassword = document.getElementById("adminPassword").value;
+            const errorMsg = document.getElementById("errorMsg");
+            const entryList = document.getElementById("entryList");
+
+            if (enteredPassword === correctPassword) {
+                errorMsg.style.display = "none";
+                entryList.style.display = "block";
+                showEntries();
+            } else {
+                errorMsg.style.display = "block";
+                entryList.style.display = "none";
+            }
+        }
+
+        async function showEntries() {
+            const entriesDiv = document.getElementById("entries");
+            entriesDiv.innerHTML = "Loading...";
+
+            try {
+                const res = await fetch('/api/orders');
+                const storedEntries = await res.json();
+                entriesDiv.innerHTML = "";
+
+                storedEntries.forEach(entry => {
+                    const div = document.createElement("div");
+                    div.classList.add("entry");
+                    div.innerHTML = `
+            <strong>Name:</strong> ${entry.name}<br>
+            <strong>Amount:</strong> PKR ${entry.amount}<br>
+            <strong>Dish:</strong> ${entry.food}<br>
+            <strong>Instructions:</strong> ${entry.instructions || "None"}
+          `;
+                    entriesDiv.appendChild(div);
+                });
+            } catch (err) {
+                entriesDiv.innerHTML = "Failed to load entries.";
+            }
+        }
+
+        document.getElementById("orderForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const name = document.getElementById("name").value;
+            const amount = document.getElementById("amount").value;
+            const food = document.getElementById("food").value;
+            const instructions = document.getElementById("instructions").value;
+
+            const order = { name, amount, food, instructions };
+
+            try {
+                const res = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(order)
+                });
+
+                if (res.ok) {
+                    alert("Your order has been submitted. Thank you!");
+                    this.reset();
+                } else {
+                    alert("Error submitting your order.");
+                }
+            } catch (err) {
+                alert("Failed to submit order.");
+            }
+        });
+    </script>
+
+</body>
+
+</html>
